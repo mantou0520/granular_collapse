@@ -28,19 +28,19 @@ using std::endl;
 int main(int argc, char **argv) try
 {   
     
-	if (argc<2) throw new Fatal("This program must be called with one argument: the name of the data input file without the '.inp' suffix.\nExample:\t %s filekey\n",argv[0]);
+    if (argc<2) throw new Fatal("This program must be called with one argument: the name of the data input file without the '.inp' suffix.\nExample:\t %s filekey\n",argv[0]);
 	
     // Setting number of CPUs
     size_t Nproc = 1;
-    if (argc>=2) Nproc = atoi(argv[1]);
+    if (argc>=3) Nproc = atoi(argv[2]);
 
-	String filekey  (argv[1]);
+    String filekey  (argv[1]);
     String filename (filekey+".inp");
     if (!Util::FileExists(filename)) throw new Fatal("File <%s> not found",filename.CStr());
     ifstream infile(filename.CStr());
     
-	String CrossSection;// Shape of the cross-section of the column
-	String ptype;       // Particle type 
+    String CrossSection;// Shape of the cross-section of the column
+    String ptype;       // Particle type 
     String test;       // Test type 
     bool   Cohesion;    // Decide if coheison is going to be simulated
     double fraction;    // Fraction of particles to be generated
@@ -63,14 +63,14 @@ int main(int argc, char **argv) try
     size_t scalingx;    // scalingx
     size_t scalingy;    // scalingy
     size_t scalingz;    // scalingz
-	size_t plane_x;     // the scaling of the size of the plane in x direction
-	size_t plane_y;     // the scaling of the size of the plane in y direction
+    size_t plane_x;     // the scaling of the size of the plane in x direction
+    size_t plane_y;     // the scaling of the size of the plane in y direction
     double rho;         // rho
     double Tf;          // Final time for the test
     {
-		infile >> CrossSection;     infile.ignore(200,'\n');
-		infile >> ptype;     infile.ignore(200,'\n');
-		infile >> test;     infile.ignore(200,'\n');
+	infile >> CrossSection;     infile.ignore(200,'\n');
+	infile >> ptype;     infile.ignore(200,'\n');
+	infile >> test;     infile.ignore(200,'\n');
         infile >> Cohesion;     infile.ignore(200,'\n');
         infile >> fraction;     infile.ignore(200,'\n');
         infile >> Kn;           infile.ignore(200,'\n');
@@ -89,11 +89,11 @@ int main(int argc, char **argv) try
         infile >> Lx;           infile.ignore(200,'\n');
         infile >> Ly;           infile.ignore(200,'\n');
         infile >> Lz;           infile.ignore(200,'\n');
-		infile >> scalingx;     infile.ignore(200,'\n');
-		infile >> scalingy;     infile.ignore(200,'\n');
-		infile >> scalingz;     infile.ignore(200,'\n');
-		infile >> plane_x;      infile.ignore(200,'\n');
-		infile >> plane_y;      infile.ignore(200,'\n');
+	infile >> scalingx;     infile.ignore(200,'\n');
+	infile >> scalingy;     infile.ignore(200,'\n');
+	infile >> scalingz;     infile.ignore(200,'\n');
+	infile >> plane_x;      infile.ignore(200,'\n');
+	infile >> plane_y;      infile.ignore(200,'\n');
         infile >> rho;          infile.ignore(200,'\n');
         infile >> Tf;           infile.ignore(200,'\n');
     }
@@ -104,13 +104,14 @@ int main(int argc, char **argv) try
     size_t Ny = size_t(Ly*scalingy);
     size_t Nz = size_t(Lz*scalingz);
     Kn = Kn/(scalingx*scalingy); //Stiffness constant for particles
-	Kt = Kt/(scalingx*scalingy);
+    Kt = Kt/(scalingx*scalingy);
+    
     // domain
     DEM::Domain d;
 
     //Add the granular column
     if (ptype=="voronoi") d.AddVoroPack(-1,R,Lx,Ly,Lz,Nx,Ny,Nz,rho,Cohesion/*no cohesion*/,true/*periodic construction for angularity*/,seed,fraction);
-	else if (ptype=="sphereboxnormal") 
+    else if (ptype=="sphereboxnormal") 
     {
         Vec3_t Xmin(-0.5*Lx,-0.5*Ly,-0.5*Lz);
         Vec3_t Xmax = -Xmin;
@@ -144,20 +145,20 @@ int main(int argc, char **argv) try
         d.Particles[np]->Props.Mu = Mu; //Friction coefficient
     }
 	
-	// Change the shape of cross-section
-	if (CrossSection=="Circle")
-	{
-		for (size_t np=0;np<d.Particles.Size();np++)
+    // Change the shape of cross-section
+    if (CrossSection=="Circle")
+    {
+	for (size_t np=0;np<d.Particles.Size();np++)
     	{
-        	if (d.Particles[np]->x(0)*d.Particles[np]->x(0)+d.Particles[np]->x(1)*d.Particles[np]->x(1)>=0.25*Lx*Ly)
-        	{
-           	 	d.Particles[np]->Tag = 10;
-        	}
+            if (d.Particles[np]->x(0)*d.Particles[np]->x(0)+d.Particles[np]->x(1)*d.Particles[np]->x(1)>=0.25*Lx*Ly)
+            {
+           	 d.Particles[np]->Tag = 10;
+            }
     	}
     	Array<int> delpar;
     	delpar.Push(10);
     	d.DelParticles(delpar);
-	}
+    }
 
     // solve
     dt = 0.5*d.CriticalDt(); //Calculating time step
