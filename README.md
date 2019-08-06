@@ -7,3 +7,7 @@ column.cpp contains everything about the setup of the granular packing, the shap
 of the granular columns.
 
 column.inp is the input file
+
+Once built, use the following command to run
+./column column 48
+where 48 is the number of core we are going to use.
