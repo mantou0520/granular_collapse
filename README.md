@@ -11,3 +11,5 @@ column.inp is the input file
 Once built, use the following command to run
 ./column column 48
 where 48 is the number of core we are going to use.
+
+Also, we could change the shape of the cross-section of the granular column to either circular, or right triangle, or isoscele triangle. This can help us investigate the influence of the initial condition on the dynamics of the granular collapsing.
