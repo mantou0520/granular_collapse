@@ -34,7 +34,6 @@ int main(int argc, char **argv) try
     size_t Nproc = 1;
     if (argc>=3) Nproc = atoi(argv[2]);
 
-    // set up the input file
     String filekey  (argv[1]);
     String filename (filekey+".inp");
     if (!Util::FileExists(filename)) throw new Fatal("File <%s> not found",filename.CStr());
@@ -106,14 +105,12 @@ int main(int argc, char **argv) try
     size_t Nz = size_t(Lz*scalingz);
     Kn = Kn/(scalingx*scalingy); //Stiffness constant for particles
     Kt = Kt/(scalingx*scalingy);
-    
     // domain
     DEM::Domain d;
 
-    //Add the granular column, it can be Voronoi packing, or spherical particle packings.
-    // We can modify this code to obtain other kind of particle shapes
+    //Add the granular column
     if (ptype=="voronoi") d.AddVoroPack(-1,R,Lx,Ly,Lz,Nx,Ny,Nz,rho,Cohesion/*no cohesion*/,true/*periodic construction for angularity*/,seed,fraction);
-    else if (ptype=="sphereboxnormal") 
+	else if (ptype=="sphereboxnormal") 
     {
         Vec3_t Xmin(-0.5*Lx,-0.5*Ly,-0.5*Lz);
         Vec3_t Xmax = -Xmin;
@@ -129,7 +126,7 @@ int main(int argc, char **argv) try
 	
     //Determinaning the bounding box
     Vec3_t Xmin,Xmax;
-    d.BoundingBox(Xmin,Xmax); // it is better to obtain the bounding box again in the end to calculate the spreadness of the particles
+    d.BoundingBox(Xmin,Xmax);
 
     //Adding plate at the base of the column
     d.AddPlane(-2,Vec3_t(0.0,0.0,Xmin(2)-R),R,plane_x*Lz,plane_y*Lz,rho);
@@ -147,21 +144,46 @@ int main(int argc, char **argv) try
         d.Particles[np]->Props.Mu = Mu; //Friction coefficient
     }
 	
-    // Change the shape of cross-section
-    // In this case, we are obtaining a cylindrical column, if CrossSection == "Circle"
-    if (CrossSection=="Circle")
-    {
-	for (size_t np=0;np<d.Particles.Size();np++)
+	// Change the shape of cross-section
+	if (CrossSection=="circle" || CrossSection=="Circle")
+	{
+		for (size_t np=0;np<d.Particles.Size();np++)
     	{
-            if (d.Particles[np]->x(0)*d.Particles[np]->x(0)+d.Particles[np]->x(1)*d.Particles[np]->x(1)>=0.25*Lx*Ly)
-            {
-           	 d.Particles[np]->Tag = 10;
-            }
+        	if (d.Particles[np]->x(0)*d.Particles[np]->x(0)+d.Particles[np]->x(1)*d.Particles[np]->x(1)>=0.25*Lx*Ly)
+        	{
+           	 	d.Particles[np]->Tag = 10;
+        	}
     	}
     	Array<int> delpar;
     	delpar.Push(10);
     	d.DelParticles(delpar);
-    }
+	}
+	else if (CrossSection=="right_triangle")
+	{
+		for (size_t np=0;np<d.Particles.Size();np++)
+    	{
+        	if (d.Particles[np]->x(1) > Ly/Lx* d.Particles[np]->x(0))
+        	{
+           	 	d.Particles[np]->Tag = 10;
+        	}
+    	}
+    	Array<int> delpar;
+    	delpar.Push(10);
+    	d.DelParticles(delpar);
+	}
+	else if (CrossSection=="isoscele_triangle")
+	{
+		for (size_t np=0;np<d.Particles.Size();np++)
+    	{
+        	if ((d.Particles[np]->x(1) > 2*Ly/Lx* d.Particles[np]->x(0) + Ly/2) || (d.Particles[np]->x(1) > -2*Ly/Lx* d.Particles[np]->x(0) + Ly/2))
+        	{
+           	 	d.Particles[np]->Tag = 10;
+        	}
+    	}
+    	Array<int> delpar;
+    	delpar.Push(10);
+    	d.DelParticles(delpar);
+	}
 
     // solve
     dt = 0.5*d.CriticalDt(); //Calculating time step
