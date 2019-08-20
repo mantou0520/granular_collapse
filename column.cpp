@@ -63,8 +63,8 @@ int main(int argc, char **argv) try
     size_t scalingx;    // scalingx
     size_t scalingy;    // scalingy
     size_t scalingz;    // scalingz
-    size_t plane_x;     // the scaling of the size of the plane in x direction
-    size_t plane_y;     // the scaling of the size of the plane in y direction
+    size_t plane_x;     // the scaling of the size of the plane in x direction, how many particles per unit length
+    size_t plane_y;     // the scaling of the size of the plane in y direction, how many particles per unit length
     double rho;         // rho
     double Tf;          // Final time for the test
     {
