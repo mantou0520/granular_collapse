@@ -8,6 +8,7 @@ collapse = test:        Type of test (tensile or vibration)
 -0.2    = Gn:          Normal dissipative coefficient
 0.0     = Gt:          Tangential dissipative coefficient
 0.3     = Mu:          Microscopic friction coefficient
+0.3     = Muw:         Frictional coefficient of the bottom wall
 2.0e5  = Bn:          Cohesion Normal stiffness
 2.0e5  = Bt:          Cohesion Tangential stiffness
 1.0e3  = Bm:          Cohesion Torque stiffness
