@@ -27,7 +27,7 @@ using std::endl;
 
 int main(int argc, char **argv) try
 {   
-    
+	
     if (argc<2) throw new Fatal("This program must be called with one argument: the name of the data input file without the '.inp' suffix.\nExample:\t %s filekey\n",argv[0]);
 	
     // Setting number of CPUs
@@ -49,6 +49,7 @@ int main(int argc, char **argv) try
     double Gn;          // Normal dissipative coefficient
     double Gt;          // Tangential dissipative coefficient
     double Mu;          // Microscopic friction coefficient
+    double Muw;         // friction coefficient of the bottom plane
     double Bn;          // Cohesion normal stiffness
     double Bt;          // Cohesion tangential stiffness
     double Bm;          // Cohesion torque stiffness
@@ -78,6 +79,7 @@ int main(int argc, char **argv) try
         infile >> Gn;           infile.ignore(200,'\n');
         infile >> Gt;           infile.ignore(200,'\n');
         infile >> Mu;           infile.ignore(200,'\n');
+	infile >> Muw;          infile.ignore(200,'\n');
         infile >> Bn;           infile.ignore(200,'\n');
         infile >> Bt;           infile.ignore(200,'\n');
         infile >> Bm;           infile.ignore(200,'\n');
@@ -144,10 +146,15 @@ int main(int argc, char **argv) try
         d.Particles[np]->Props.Mu = Mu; //Friction coefficient
     }
 	
-	// Change the shape of cross-section
-	if (CrossSection=="circle" || CrossSection=="Circle")
-	{
-		for (size_t np=0;np<d.Particles.Size();np++)
+    // set the frictional coefficient for the bottom wall
+    Dict D;
+    D.Set(-2,"Mu",Muw);
+    d.SetProps(D);
+	
+    // Change the shape of cross-section
+    if (CrossSection=="circle" || CrossSection=="Circle")
+    {
+	for (size_t np=0;np<d.Particles.Size();np++)
     	{
         	if (d.Particles[np]->x(0)*d.Particles[np]->x(0)+d.Particles[np]->x(1)*d.Particles[np]->x(1)>=0.25*Lx*Ly)
         	{
@@ -157,10 +164,10 @@ int main(int argc, char **argv) try
     	Array<int> delpar;
     	delpar.Push(10);
     	d.DelParticles(delpar);
-	}
-	else if (CrossSection=="right_triangle")
-	{
-		for (size_t np=0;np<d.Particles.Size();np++)
+    }
+    else if (CrossSection=="right_triangle")
+    {
+	for (size_t np=0;np<d.Particles.Size();np++)
     	{
         	if (d.Particles[np]->x(1) > Ly/Lx* d.Particles[np]->x(0))
         	{
@@ -170,10 +177,10 @@ int main(int argc, char **argv) try
     	Array<int> delpar;
     	delpar.Push(10);
     	d.DelParticles(delpar);
-	}
-	else if (CrossSection=="isoscele_triangle")
-	{
-		for (size_t np=0;np<d.Particles.Size();np++)
+    }
+    else if (CrossSection=="isoscele_triangle")
+    {
+	for (size_t np=0;np<d.Particles.Size();np++)
     	{
         	if ((d.Particles[np]->x(1) > 2*Ly/Lx* d.Particles[np]->x(0) + Ly/2) || (d.Particles[np]->x(1) > -2*Ly/Lx* d.Particles[np]->x(0) + Ly/2))
         	{
@@ -183,7 +190,8 @@ int main(int argc, char **argv) try
     	Array<int> delpar;
     	delpar.Push(10);
     	d.DelParticles(delpar);
-	}
+    }
+    else throw new Fatal("The cross-section of the granular column is not implemented yet");
 
     // solve
     dt = 0.5*d.CriticalDt(); //Calculating time step
