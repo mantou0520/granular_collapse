@@ -191,11 +191,15 @@ int main(int argc, char **argv) try
     	delpar.Push(10);
     	d.DelParticles(delpar);
     }
+    else if (CrossSection=="Square" || CrossSection=="square")
+    {
+	    std::cout << "The cross section of the column is square" << std::endl;
+    }
     else throw new Fatal("The cross-section of the granular column is not implemented yet");
 
     // solve
     dt = 0.5*d.CriticalDt(); //Calculating time step
     d.Alpha = R; //Verlet distance
-    d.Solve(/*tf*/Tf, dt, /*dtOut*/Tf/100, NULL, NULL, "column", 2, Nproc);
+    d.Solve(/*tf*/Tf, dt, /*dtOut*/dtOut, NULL, NULL, "column", 2, Nproc);
 }
 MECHSYS_CATCH
